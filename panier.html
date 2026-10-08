@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panier | N'S Trade and Business</title>
+<meta name="description" content="Votre panier : vérifiez vos articles et envoyez votre commande sur WhatsApp.">
+<link rel="icon" href="img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Figtree:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="header"></div>
+<main class="wrap">
+<nav class="crumb"><a href="index.html">Accueil</a> / Panier</nav>
+<div class="cartpg" id="cp">
+ <section class="box"><h2>Articles (<span id="n">0</span>)</h2><div id="lines"></div></section>
+ <aside class="box side"><h2>Finaliser la commande</h2>
+  <label for="nom">Votre nom complet</label><input id="nom" class="fld" autocomplete="name" placeholder="Prénom Nom">
+  <label for="tel">Votre numéro de téléphone</label>
+  <div class="phone"><div class="cc"><img id="flag" src="https://flagcdn.com/w40/bf.png" alt="" width="22" height="15" onerror="this.style.visibility='hidden'"><b id="ccTxt">+226</b><i aria-hidden="true">▾</i><select id="cc" aria-label="Indicatif du pays"></select></div>
+   <input id="cc2" class="cc2" type="tel" inputmode="numeric" placeholder="+indicatif" aria-label="Indicatif du pays" hidden><input id="tel" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="Numéro (sans l'indicatif)"></div>
+  <details class="acc" open><summary>Réception et précisions</summary>
+   <div class="chips"><button type="button" class="chip on" data-r="retrait">Retrait au point de retrait</button><button type="button" class="chip" data-r="livraison">Livraison</button></div>
+   <input id="adr" class="fld" placeholder="Ville, quartier, repère" aria-label="Adresse de livraison" hidden>
+   <textarea id="note" class="fld" rows="3" placeholder="Précisions : couleur, taille, délai souhaité…" aria-label="Précisions"></textarea>
+  </details>
+  <div class="promo"><b>Code promo</b><div><input id="code" class="fld" placeholder="ENTREZ VOTRE CODE" autocapitalize="characters" aria-label="Code promo"><button type="button" class="btn btn-navy" id="apply">Appliquer</button></div><small id="pmsg" aria-live="polite"></small></div>
+  <div class="sum" id="sum"></div>
+  <p class="err" id="err" role="alert"></p>
+  <button type="button" class="btn btn-wa wide" id="send">Commander sur WhatsApp</button>
+  <div id="done"></div>
+  <p style="font-size:13px;color:var(--muted);margin-top:10px">Paiement intégral avant commande. On confirme le total et la livraison sur WhatsApp.</p>
+ </aside>
+</div>
+<div class="empty" id="empty" hidden style="margin-top:20px"><h3>Votre panier est vide</h3><p>Parcourez le catalogue et ajoutez vos produits.</p><a class="btn btn-navy" href="catalogue.html">Voir le catalogue</a></div>
+</main>
+<div id="footer"></div>
+<script src="js/app.js"></script>
+<script>
+layout("panier.html");
+READY.then(() => {
+let promo = null, recep = "retrait", orderNo = null;
+const rows = () => Cart.get().map((l, i) => ({ ...l, i, p: PRODUCTS.find(x => x.id === l.id) })).filter(r => r.p);
+const label = r => [r.taille && "Taille " + r.taille, r.couleur, r.mode === "gros" ? "En gros" : "À l'unité"].filter(Boolean).join(", ");
+function totals() {
+  const sub = rows().reduce((s, r) => s + r.p.prix * r.qte, 0);
+  const rem = promo ? Math.min(sub, promo.type === "pct" ? Math.round(sub * promo.valeur / 100) : promo.valeur) : 0;
+  return { sub, rem, total: sub - rem };
+}
+function render() {
+  const r = rows(), n = r.reduce((s, x) => s + x.qte, 0), t = totals();
+  $("#cp").hidden = !r.length; $("#empty").hidden = !!r.length;
+  $("#n").textContent = n;
+  $("#lines").innerHTML = r.map(x => `<div class="line"><a class="lph" href="produit.html?id=${x.p.id}"><img src="${photosOf(x.p)[0]}" alt="" onerror="this.remove()"></a>
+    <div><h3><a href="produit.html?id=${x.p.id}">${x.p.nom}</a></h3><small>${label(x)}</small><div class="price">${fcfa(x.p.prix)}</div>
+    <div class="qty"><button data-q="-1" data-i="${x.i}" aria-label="Moins">−</button><span>${x.qte}</span><button data-q="1" data-i="${x.i}" aria-label="Plus">+</button></div></div>
+    <button class="rm" data-rm="${x.i}" aria-label="Retirer ${x.p.nom}">×</button></div>`).join("");
+  $("#sum").innerHTML = `<div><span>Sous-total (${n} article${n > 1 ? "s" : ""})</span><b>${fcfa(t.sub)}</b></div>` +
+    (promo ? `<div class="ok"><span>Code ${promo.code}</span><b>− ${fcfa(t.rem)}</b></div>` : "") +
+    `<div><span>Livraison</span><b>À confirmer</b></div><div class="tot"><span>Total</span><span>${fcfa(t.total)}</span></div>`;
+}
+document.addEventListener("click", e => {
+  const q = e.target.closest("[data-q]"), rm = e.target.closest("[data-rm]"), rc = e.target.closest("[data-r]");
+  if (q || rm) {
+    const c = Cart.get(), i = +(q || rm).dataset[q ? "i" : "rm"], l = c[i], p = PRODUCTS.find(x => x.id === l.id);
+    if (rm) c.splice(i, 1); else l.qte = Math.max(l.mode === "gros" ? p.moq : 1, l.qte + +q.dataset.q);
+    Cart.save(c); render();
+  }
+  if (rc) { recep = rc.dataset.r; document.querySelectorAll("[data-r]").forEach(b => b.classList.toggle("on", b === rc)); $("#adr").hidden = recep !== "livraison"; }
+});
+$("#apply").onclick = () => {
+  const c = $("#code").value.trim().toUpperCase(), f = PROMOS.find(x => x.code === c);
+  promo = f || null; $("#pmsg").className = f ? "ok" : "err";
+  $("#pmsg").textContent = f ? "Code appliqué." : c ? "Code invalide ou expiré." : "Entrez un code.";
+  render();
+};
+$("#send").onclick = () => {
+  const r = rows(), nom = $("#nom").value.trim(), tel = phone(), adr = $("#adr").value.trim(), err = m => { $("#err").textContent = m; };
+  if (!r.length) return err("Votre panier est vide.");
+  if (nom.length < 2) return err("Entrez votre nom complet.");
+  const pe = phoneError(); if (pe) return err(pe);
+  if (recep === "livraison" && !adr) return err("Indiquez votre ville et votre quartier pour la livraison.");
+  err("");
+  const d = new Date(), t = totals();
+  orderNo = orderNo || `NSTB-${String(d.getDate()).padStart(2, "0")}${String(d.getMonth() + 1).padStart(2, "0")}-${Math.floor(1000 + Math.random() * 9000)}`;
+  const msg = [`*Nouvelle commande ${orderNo}*`, `Nom : ${nom}`, `Téléphone : ${tel}`,
+    `Réception : ${recep === "livraison" ? "Livraison, " + adr : "Retrait au point de retrait"}`, "",
+    ...r.map((x, k) => `${k + 1}. ${x.p.nom} | ${label(x)} | x${x.qte} = ${fcfa(x.p.prix * x.qte)}`), "",
+    `Sous-total : ${fcfa(t.sub)}`, promo ? `Code promo ${promo.code} : -${fcfa(t.rem)}` : "", `*Total : ${fcfa(t.total)}* (livraison à confirmer)`,
+    $("#note").value.trim() ? `\nPrécisions : ${$("#note").value.trim()}` : ""].filter((x, k, a) => x !== "" || a[k - 1] !== "").join("\n");
+  const url = waLink(msg); window.open(url, "_blank");
+  $("#done").innerHTML = `<div class="done"><b>Commande ${orderNo}</b><br>WhatsApp s'est ouvert avec votre commande. Envoyez le message pour la valider. <a href="${url}" target="_blank" rel="noopener" style="color:var(--blue);font-weight:700">Rouvrir WhatsApp</a> | <a href="#" id="clr" style="color:var(--blue);font-weight:700">Vider le panier</a></div>`;
+  $("#clr").onclick = ev => { ev.preventDefault(); Cart.save([]); promo = null; orderNo = null; $("#done").innerHTML = ""; render(); };
+};
+initPhone();
+render();
+});
+</script>
+</body>
+</html>

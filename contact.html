@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contact | N'S Trade and Business</title>
+<meta name="description" content="Contactez N'S Trade and Business : question, devis, commande en gros ou produit introuvable.">
+<link rel="icon" href="img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Figtree:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="header"></div>
+<main class="wrap">
+<nav class="crumb"><a href="index.html">Accueil</a> / Contact</nav>
+<div class="ct">
+ <section class="box fm"><h1 style="font-size:clamp(26px,3.5vw,34px);margin-bottom:12px">Nous contacter</h1>
+  <div class="chips"><button type="button" class="chip on" data-t="question">Question</button><button type="button" class="chip" data-t="devis">Demande de devis</button><button type="button" class="chip" data-t="gros">Commande en gros</button><button type="button" class="chip" data-t="produit">Produit introuvable</button></div>
+  <label for="nom">Votre nom complet</label><input id="nom" class="fld" autocomplete="name" placeholder="Prénom Nom">
+  <label for="tel">Votre numéro de téléphone</label><div id="phoneBox"></div>
+  <label for="email">Email (facultatif)</label><input id="email" class="fld" type="email" autocomplete="email" placeholder="vous@exemple.com">
+  <div id="r-produit"><label for="f-produit" id="l-produit"></label><input id="f-produit" class="fld"></div>
+  <div class="two"><div id="r-qte"><label for="f-qte">Quantité</label><input id="f-qte" class="fld" placeholder="Ex. 50 pièces"></div><div id="r-budget"><label for="f-budget">Budget (facultatif)</label><input id="f-budget" class="fld" placeholder="Ex. 500 000 FCFA"></div></div>
+  <div id="r-pays"><label for="f-pays">Ville et pays de livraison</label><input id="f-pays" class="fld" placeholder="Ex. Ouagadougou, Burkina Faso"></div>
+  <div id="r-lien"><label for="f-lien">Lien du produit (Alibaba, 1688…) (facultatif)</label><input id="f-lien" class="fld" type="url" placeholder="https://"></div>
+  <div id="r-photo"><label for="photo">Photo du produit (facultatif)</label><input id="photo" class="fld" type="file" accept="image/*"></div>
+  <label for="msg" id="msgl">Votre message</label><textarea id="msg" class="fld" rows="4"></textarea>
+  <input type="checkbox" id="bot" hidden aria-hidden="true" tabindex="-1">
+  <p class="err" id="err" role="alert"></p>
+  <button type="button" class="btn btn-wa wide" id="send">Envoyer sur WhatsApp</button><div id="done" aria-live="polite"></div>
+ </section>
+ <aside class="box infoc"><h2>Nous joindre</h2>
+  <a id="iwa"></a><a id="imail"></a><a id="itel"></a><div id="iadr"></div>
+  <p>Réponse rapide sur WhatsApp. Livraison par bateau ou par avion, retrait possible au Burkina Faso.</p>
+  <p>Pour un devis ou une commande en gros, précisez les produits et les quantités : on vous répond avec un prix.</p>
+ </aside>
+</div>
+</main>
+<div id="footer"></div>
+<script src="js/app.js"></script>
+<script>
+layout("contact.html");
+$("#phoneBox").innerHTML = phoneHTML(); initPhone();
+$("#iwa").href = waLink("Bonjour, j'ai une question."); $("#iwa").textContent = "WhatsApp : +226 71 94 44 70";
+$("#imail").href = "mailto:" + CONFIG.email; $("#imail").textContent = CONFIG.email;
+$("#itel").href = "tel:" + CONFIG.telChine.replace(/\s/g, ""); $("#itel").textContent = "Chine : " + CONFIG.telChine;
+$("#iadr").innerHTML = `<a href="${CONFIG.retrait.carte}" target="_blank" rel="noopener">Point de retrait à ${CONFIG.retrait.texte} : voir la carte</a>`;
+const TYPES = {
+  question: { l: "Question", f: [] },
+  devis: { l: "Demande de devis", f: ["produit", "qte", "budget", "pays", "lien", "photo"], pl: "Produit ou véhicule souhaité" },
+  gros: { l: "Commande en gros", f: ["produit", "qte", "pays", "lien"], pl: "Produit(s) souhaité(s)" },
+  produit: { l: "Produit introuvable", f: ["produit", "qte", "pays", "lien", "photo"], pl: "Nom du produit recherché" }
+};
+const photoOn = !!(CONFIG.cloudinary.cloud && CONFIG.cloudinary.preset);
+let type = "question";
+function setType(t) {
+  type = t; const T = TYPES[t];
+  document.querySelectorAll("[data-t]").forEach(b => b.classList.toggle("on", b.dataset.t === t));
+  ["produit", "qte", "budget", "pays", "lien", "photo"].forEach(k => { $("#r-" + k).hidden = !(T.f.includes(k) && (k !== "photo" || photoOn)); });
+  $("#l-produit").textContent = T.pl || ""; $("#msgl").textContent = t === "question" ? "Votre message" : "Détails (taille, couleur, usage…)";
+}
+const H = { "#devis": "devis", "#gros": "gros", "#demande": "produit" };
+const fromHash = () => setType(H[location.hash] || type);
+addEventListener("hashchange", fromHash); fromHash();
+document.addEventListener("click", e => { const c = e.target.closest("[data-t]"); if (c) setType(c.dataset.t); });
+async function uploadPhoto(file) {
+  if (file.size > 12e6) throw new Error("trop lourde");
+  const img = await createImageBitmap(file), s = Math.min(1, 1200 / Math.max(img.width, img.height));
+  const cv = Object.assign(document.createElement("canvas"), { width: Math.round(img.width * s), height: Math.round(img.height * s) });
+  cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
+  const blob = await new Promise(r => cv.toBlob(r, "image/jpeg", .8)), fd = new FormData();
+  fd.append("file", blob); fd.append("upload_preset", CONFIG.cloudinary.preset);
+  const r = await fetch(`https://api.cloudinary.com/v1_1/${CONFIG.cloudinary.cloud}/image/upload`, { method: "POST", body: fd });
+  if (!r.ok) throw new Error("envoi refusé");
+  return (await r.json()).secure_url;
+}
+$("#send").onclick = async () => {
+  const g = id => $("#" + id).value.trim(), T = TYPES[type], err = m => { $("#err").textContent = m; }, has = k => !$("#r-" + k).hidden;
+  const nom = g("nom"), tel = phone(), email = g("email"), btn = $("#send");
+  if (nom.length < 2) return err("Entrez votre nom complet.");
+  const pe = phoneError(); if (pe) return err(pe);
+  if (email && !/^\S+@\S+\.\S+$/.test(email)) return err("Cette adresse email semble incorrecte.");
+  if (type === "question" ? g("msg").length < 5 : !g("f-produit")) return err(type === "question" ? "Écrivez votre message." : "Indiquez le produit concerné.");
+  err(""); btn.disabled = true; btn.textContent = "Envoi en cours…";
+  let photo = "", note = "";
+  if (has("photo") && $("#photo").files[0]) { try { photo = await uploadPhoto($("#photo").files[0]); } catch (e) { note = "La photo n'a pas pu être envoyée : joignez-la directement dans WhatsApp."; } }
+  const d = new Date(), ref = `DEM-${String(d.getDate()).padStart(2, "0")}${String(d.getMonth() + 1).padStart(2, "0")}-${Math.floor(1000 + Math.random() * 9000)}`;
+  const text = [`*${T.l} ${ref}*`, `Nom : ${nom}`, `Téléphone : ${tel}`, email && `Email : ${email}`, has("produit") && `Produit : ${g("f-produit")}`,
+    has("qte") && g("f-qte") && `Quantité : ${g("f-qte")}`, has("budget") && g("f-budget") && `Budget : ${g("f-budget")}`, has("pays") && g("f-pays") && `Ville et pays : ${g("f-pays")}`,
+    has("lien") && g("f-lien") && `Lien : ${g("f-lien")}`, photo && `Photo : ${photo}`, g("msg") && `\nMessage : ${g("msg")}`].filter(Boolean).join("\n");
+  let mail = "";
+  if (CONFIG.web3formsKey) {
+    try {
+      const r = await fetch("https://api.web3forms.com/submit", { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ access_key: CONFIG.web3formsKey, subject: `${T.l} ${ref} - ${nom}`, from_name: nom, email: email || undefined, message: text, botcheck: $("#bot").checked }) });
+      mail = r.ok ? "Une copie est partie par email." : "L'email n'a pas pu partir, mais votre demande est dans WhatsApp.";
+    } catch (e) { mail = "L'email n'a pas pu partir, mais votre demande est dans WhatsApp."; }
+  }
+  const url = waLink(text); window.open(url, "_blank");
+  $("#done").innerHTML = `<div class="done"><b>Demande ${ref}</b><br>WhatsApp s'est ouvert avec votre message : envoyez-le pour valider. ${mail} ${note}<br><a href="${url}" target="_blank" rel="noopener" style="color:var(--blue);font-weight:700">Ouvrir WhatsApp</a></div>`;
+  btn.disabled = false; btn.textContent = "Envoyer sur WhatsApp";
+};
+</script>
+</body>
+</html>

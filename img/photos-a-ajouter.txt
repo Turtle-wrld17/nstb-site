@@ -1,0 +1,13 @@
+PHOTOS A DEPOSER DANS CE DOSSIER (format .jpg, moins de 300 Ko chacune)
+Sources gratuites : unsplash.com, pexels.com. Une photo manquante laisse un fond bleu propre.
+
+BANNIERE (1600x700, sujet a gauche libre pour le texte)
+hero-1.jpg  colis, boutique ou produits varies | hero-2.jpg  entrepot, cartons, marchandises en gros | hero-3.jpg  moto ou voiture
+
+CATEGORIES (600x600, produit sur fond clair)
+cat-femmes.jpg  cat-hommes.jpg  cat-chaussures.jpg  cat-electronique.jpg
+cat-beaute.jpg  cat-maison.jpg  cat-vehicules.jpg  cat-autres.jpg
+
+BANDEAU VEHICULES (1000x600) : vehicules.jpg
+
+PRODUITS (800x800) : dossier img/produits/ , p1.jpg a p8.jpg (provisoire, ensuite via Google Sheet)

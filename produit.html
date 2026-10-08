@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Produit | N'S Trade and Business</title>
+<meta name="description" content="Détail du produit, tailles, couleurs et commande par WhatsApp.">
+<link rel="icon" href="img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Figtree:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="header"></div>
+<main class="wrap">
+<div id="pp"></div>
+</main>
+<div id="footer"></div>
+<script src="js/app.js"></script>
+<script>
+layout("catalogue.html");
+READY.then(() => {
+const p = PRODUCTS.find(x => x.id === new URLSearchParams(location.search).get("id")), root = $("#pp");
+if (!p) root.innerHTML = `<div class="empty" style="margin-top:30px"><h3>Produit introuvable</h3><p>Ce produit n'existe plus ou le lien est incorrect.</p><a class="btn btn-navy" href="catalogue.html">Retour au catalogue</a></div>`;
+else {
+  document.title = `${p.nom} | ${CONFIG.nom}`;
+  const cmd = p.statut === "commande", ph = photosOf(p), sel = { couleur: p.couleurs?.[0], taille: p.tailles?.[0], mode: "unite", qte: 1 };
+  const desc = p.desc || `${p.nom} importé de Chine. Écrivez-nous pour les détails et les disponibilités.`;
+  const min = () => sel.mode === "gros" ? p.moq : 1;
+  const group = (k, t, arr) => arr?.length ? `<div class="opt"><b>${t}</b><div class="chips">${arr.map(v => `<button class="chip ${sel[k] === v ? "on" : ""}" data-o="${k}" data-v="${v}">${v}</button>`).join("")}</div></div>` : "";
+  const same = PRODUCTS.filter(x => x.id !== p.id && x.cat === p.cat), rel = [...same, ...PRODUCTS.filter(x => x.id !== p.id && x.cat !== p.cat)].slice(0, 4);
+  root.innerHTML = `<nav class="crumb"><a href="index.html">Accueil</a> / <a href="catalogue.html">Catalogue</a> / <a href="catalogue.html?cat=${p.cat}">${catName(p.cat)}</a> / ${p.nom}</nav>
+  <div class="pp"><div><div class="pmain"><img id="mainImg" src="${ph[0]}" alt="${p.nom}" onerror="this.style.opacity=0" onload="this.style.opacity=1"></div>
+    <div class="thumbs">${ph.map((s, i) => `<button class="${i ? "" : "on"}" data-th="${s}" aria-label="Photo ${i + 1}"><img src="${s}" alt="" onerror="this.parentNode.remove()"></button>`).join("")}</div></div>
+  <div class="pi"><small>${catName(p.cat)}</small><h1>${p.nom}</h1><span class="badge ${cmd ? "cmd" : ""}">${cmd ? "Sur commande" : "Disponible"}</span>
+    <div class="price">${p.prix ? fcfa(p.prix) + (p.ancien ? `<s>${fcfa(p.ancien)}</s>` : "") : "Prix sur devis"}</div><p style="margin:10px 0;color:var(--muted)">${desc}</p>
+    <div id="opts"></div>
+    ${p.prix ? `<div class="acts"><button class="btn btn-navy" id="add">Ajouter au panier</button><a class="btn btn-wa" id="wa" target="_blank" rel="noopener">Commander sur WhatsApp</a></div>` : `<div class="acts"><a class="btn btn-red" href="contact.html#devis">Demander un devis</a><a class="btn btn-wa" id="wa" target="_blank" rel="noopener">Écrire sur WhatsApp</a></div>`}
+    <div class="note2">${cmd ? "Produit sur commande : on vous confirme le prix final et le délai (bateau ou avion) sur WhatsApp." : "Produit disponible. Paiement intégral avant commande."}</div></div></div>
+  <div class="tabs"><button class="on" data-tab="d">Description</button><button data-tab="i">Informations</button></div>
+  <div class="pane" id="tab"></div>
+  <section class="blk"><div class="head"><h2>Vous aimerez aussi</h2><a href="catalogue.html">Tout voir</a></div><div class="grid">${rel.map(cardHTML).join("")}</div></section>`;
+  const tabs = { d: `<p>${desc}</p>`, i: `<table class="info"><tr><th>Information</th><th>Détail</th></tr><tr><td>Catégorie</td><td>${catName(p.cat)}</td></tr><tr><td>Disponibilité</td><td>${cmd ? "Sur commande" : "Disponible maintenant"}</td></tr><tr><td>Commande en gros</td><td>${p.moq > 1 ? "Dès " + p.moq + " pièces" : "Sur devis"}</td></tr>${p.tailles?.length ? `<tr><td>Tailles</td><td>${p.tailles.join(", ")}</td></tr>` : ""}${p.couleurs?.length ? `<tr><td>Couleurs</td><td>${p.couleurs.join(", ")}</td></tr>` : ""}<tr><td>Expédition</td><td>Bateau ou avion, retrait ou livraison</td></tr></table>` };
+  const showTab = k => { $("#tab").innerHTML = tabs[k]; document.querySelectorAll("[data-tab]").forEach(b => b.classList.toggle("on", b.dataset.tab === k)); };
+  function opts() {
+    $("#opts").innerHTML = group("taille", "Taille", p.tailles) + group("couleur", "Couleur", p.couleurs) +
+      (p.moq > 1 ? `<div class="opt"><b>Type de commande</b><div class="chips"><button class="chip ${sel.mode === "unite" ? "on" : ""}" data-o="mode" data-v="unite">À l'unité</button><button class="chip ${sel.mode === "gros" ? "on" : ""}" data-o="mode" data-v="gros">En gros (dès ${p.moq} pièces)</button></div></div>` : "") +
+      `<div class="opt"><b>Quantité</b><div class="qty"><button data-q="-1" aria-label="Moins">−</button><span>${sel.qte}</span><button data-q="1" aria-label="Plus">+</button></div> ${p.prix ? `<span class="price" style="margin-left:14px">${fcfa(p.prix * sel.qte)}</span>` : ""}</div>`;
+    const msg = `Bonjour, je souhaite commander :\n- ${p.nom}${sel.taille ? " | Taille " + sel.taille : ""}${sel.couleur ? " | " + sel.couleur : ""}\n- Quantité : ${sel.qte} (${sel.mode === "gros" ? "en gros" : "à l'unité"})\n- Total : ${fcfa(p.prix * sel.qte)}`;
+    $("#wa").href = waLink(p.prix ? msg : `Bonjour, je souhaite un devis pour : ${p.nom}`);
+  }
+  root.addEventListener("click", e => {
+    const o = e.target.closest("[data-o]"), q = e.target.closest("[data-q]"), t = e.target.closest("[data-tab]"), th = e.target.closest("[data-th]");
+    if (o) { sel[o.dataset.o] = o.dataset.v; if (o.dataset.o === "mode") sel.qte = min(); opts(); }
+    if (q) { sel.qte = Math.max(min(), sel.qte + +q.dataset.q); opts(); }
+    if (t) showTab(t.dataset.tab);
+    if (th) { $("#mainImg").src = th.dataset.th; document.querySelectorAll("[data-th]").forEach(b => b.classList.toggle("on", b === th)); }
+    if (e.target.closest("#add")) Cart.add(p.id, { couleur: sel.couleur, taille: sel.taille, mode: sel.mode }, sel.qte);
+  });
+  opts(); showTab("d");
+}
+});
+</script>
+</body>
+</html>

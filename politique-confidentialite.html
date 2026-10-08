@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Politique de confidentialité | N'S Trade and Business</title>
+<meta name="description" content="Comment N'S Trade and Business utilise vos données : commandes, formulaires, WhatsApp, photos et statistiques.">
+<link rel="icon" href="img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Figtree:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="header"></div>
+<main class="wrap">
+<nav class="crumb"><a href="index.html">Accueil</a> / Politique de confidentialité</nav>
+<div class="doc">
+<h1>Politique de confidentialité</h1>
+<div id="pc"></div>
+</div>
+</main>
+<div id="footer"></div>
+<script src="js/app.js"></script>
+<script>
+layout("politique-confidentialite.html");
+$("#pc").innerHTML = `
+<p class="lead">Nous collectons le strict nécessaire pour traiter vos commandes et vos demandes.</p>
+<h2>Les données que nous collectons</h2>
+<ul><li>Votre nom, votre numéro de téléphone et, si vous le donnez, votre email.</li><li>Votre adresse de livraison (ville, quartier) si vous choisissez la livraison.</li><li>Le contenu de votre commande ou de votre demande, et les photos que vous joignez.</li></ul>
+<h2>Pourquoi</h2>
+<p>Uniquement pour répondre à votre demande, confirmer votre commande, organiser la livraison ou le retrait, et vous recontacter à ce sujet.</p>
+<h2>Qui y a accès</h2>
+<p>${CONFIG.nom} reçoit vos informations par WhatsApp (Meta) et par email. Pour faire fonctionner le site, nous utilisons des services techniques : Web3Forms (envoi des emails), Cloudinary (stockage des photos jointes), GitHub Pages (hébergement) et Google Analytics (statistiques de visite anonymisées). Nous ne vendons pas vos données.</p>
+<h2>Panier et cookies</h2>
+<p>Votre panier est enregistré sur votre appareil (stockage local du navigateur) pour que vous le retrouviez à votre prochaine visite. Il n'est pas envoyé à un serveur. Google Analytics peut utiliser des cookies pour mesurer la fréquentation du site.</p>
+<h2>Combien de temps</h2>
+<p>Nous conservons vos informations le temps nécessaire pour traiter votre demande et suivre votre commande, ainsi que la durée imposée par la loi.</p>
+<h2>Vos droits</h2>
+<p>Vous pouvez demander l'accès à vos données, leur correction ou leur suppression en écrivant à <a href="mailto:${CONFIG.email}">${CONFIG.email}</a> ou sur WhatsApp.</p>`;
+</script>
+</body>
+</html>

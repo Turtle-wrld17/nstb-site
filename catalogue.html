@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Catalogue | N'S Trade and Business</title>
+<meta name="description" content="Parcourez nos produits de Chine : mode, électronique, beauté, motos et véhicules. Disponibles maintenant ou sur commande.">
+<link rel="icon" href="img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Figtree:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="header"></div>
+<main class="wrap">
+<nav class="crumb"><a href="index.html">Accueil</a> / Catalogue</nav>
+<div class="head"><h1 style="font-size:clamp(28px,4vw,40px)">Catalogue</h1></div>
+<div class="chips" id="fcat"></div><div class="chips" id="fst"></div>
+<div class="bar2" id="count" aria-live="polite"></div>
+<div class="grid" id="list"></div>
+<section class="ask" id="introuvable"><h2>Vous ne trouvez pas votre produit ?</h2>
+<p>Envoyez-nous son nom, une photo ou un lien. On le cherche et on vous répond avec un prix.</p>
+<a class="btn btn-wa" href="contact.html#demande">Faire une demande</a></section>
+</main>
+<div id="footer"></div>
+<script src="js/app.js"></script>
+<script>
+layout("catalogue.html");
+READY.then(() => {
+const qs = new URLSearchParams(location.search);
+const norm = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+const st = { cat: qs.get("cat") || "", statut: qs.get("statut") || "", q: norm(qs.get("q") || "") };
+$(".search input").value = qs.get("q") || "";
+const chip = (k, v, t) => `<button class="chip ${st[k] === v ? "on" : ""}" data-k="${k}" data-v="${v}">${t}</button>`;
+function render() {
+  $("#fcat").innerHTML = chip("cat", "", "Toutes les catégories") + CATEGORIES.map(([id, n]) => chip("cat", id, n)).join("");
+  $("#fst").innerHTML = chip("statut", "", "Tous") + chip("statut", "disponible", "Disponible maintenant") + chip("statut", "commande", "Sur commande");
+  const l = PRODUCTS.filter(p => (!st.cat || p.cat === st.cat) && (!st.statut || p.statut === st.statut) && (!st.q || norm(p.nom + " " + catName(p.cat)).includes(st.q)));
+  $("#count").textContent = l.length + (l.length > 1 ? " produits" : " produit");
+  $("#list").innerHTML = l.length ? l.map(cardHTML).join("") : `<div class="empty" style="grid-column:1/-1"><h3>Aucun produit trouvé</h3><p>${CATALOG_ERROR ? "Le catalogue n'a pas pu se charger. Vérifiez votre connexion et réessayez." + (CATALOG_DETAIL ? ` (${CATALOG_DETAIL})` : "") : "Essayez un autre mot ou une autre catégorie, ou demandez-nous ce produit."}</p></div>`;
+}
+document.addEventListener("click", e => { const c = e.target.closest(".chip[data-k]"); if (c) { st[c.dataset.k] = c.dataset.v; render(); } });
+render();
+});
+</script>
+</body>
+</html>

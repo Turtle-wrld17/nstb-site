@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FAQ | N'S Trade and Business</title>
+<meta name="description" content="Questions fréquentes : commande, paiement, livraison, expédition par bateau ou avion, commande en gros et devis.">
+<link rel="icon" href="img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Figtree:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="header"></div>
+<main class="wrap">
+<nav class="crumb"><a href="index.html">Accueil</a> / FAQ</nav>
+<div class="doc">
+<h1>Questions fréquentes</h1>
+<p class="lead">Tout ce qu'il faut savoir avant de commander.</p>
+<div class="faq" id="faq"></div>
+<a class="btn btn-wa" href="contact.html">Une autre question ?</a>
+</div>
+</main>
+<div id="footer"></div>
+<script src="js/app.js"></script>
+<script>
+layout("faq.html");
+const Q = [
+  ["Comment passer commande ?", "Ajoutez vos produits au panier, puis cliquez sur « Commander sur WhatsApp ». Votre commande arrive chez nous avec un numéro. On confirme le total et la livraison, vous payez, et on lance la commande."],
+  ["Quelle différence entre « Disponible » et « Sur commande » ?", "Un produit <b>disponible</b> est prêt à être commandé immédiatement. Un produit <b>sur commande</b> est un produit qu'on vous fait venir de Chine : on vous confirme le prix final et le délai avant de commencer."],
+  ["Commande individuelle ou commande en gros ?", "La commande individuelle s'adresse aux particuliers, pour de petites quantités. La commande en gros s'adresse aux commerçants et revendeurs. La quantité minimale en gros est indiquée sur chaque produit. Pour un devis, utilisez le <a href=\"contact.html#gros\">formulaire de commande en gros</a>."],
+  ["Comment payer ?", "Le paiement est intégral avant la commande. Les moyens de paiement vous sont indiqués sur WhatsApp au moment de la confirmation."],
+  ["Quels sont les délais d'expédition ?", "On expédie par bateau ou par avion, selon votre budget et votre urgence. Le délai exact dépend du produit et du mode choisi : on vous le confirme au moment de la commande."],
+  ["Retrait ou livraison ?", "Vous pouvez retirer votre commande à notre <a href=\"" + CONFIG.retrait.carte + "\" target=\"_blank\" rel=\"noopener\">point de retrait à " + CONFIG.retrait.texte + "</a>, ou vous faire livrer. Les frais de livraison sont confirmés sur WhatsApp."],
+  ["Je ne trouve pas mon produit sur le site.", "Pas de souci : le catalogue ne montre qu'une partie de ce qu'on peut vous procurer. Envoyez-nous le nom, une photo ou un lien avec le <a href=\"contact.html#demande\">formulaire « Produit introuvable »</a>."],
+  ["Comment demander un devis ?", "Utilisez le <a href=\"contact.html#devis\">formulaire de devis</a>, surtout pour les véhicules, les motos et les commandes en gros. On vous répond avec un prix."],
+  ["Comment fonctionne le code promo ?", "Entrez votre code dans le panier avant d'envoyer la commande. Le montant final est confirmé par nous sur WhatsApp."],
+  ["Puis-je commander depuis un autre pays ?", "Oui. Choisissez l'indicatif de votre pays dans le formulaire. On vous confirme les possibilités de livraison vers chez vous."]
+];
+$("#faq").innerHTML = Q.map(([q, a]) => `<details><summary>${q}</summary><p>${a}</p></details>`).join("");
+</script>
+</body>
+</html>
