@@ -10,7 +10,7 @@ const CONFIG = {
     promos: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTlTtmuu7QmH45l61h_3G2RAwEx8PhHuAfo880ZJgUuz7-3lMRHv0S3aJLqIvVFijdJfQIHP5Rh3tQo/pub?gid=1844997149&single=true&output=csv" },
   cloudinary: { cloud: "mwryzy3w", preset: "nstb_demandes" }, // compte gratuit cloudinary.com (envoi de photos)
   telChine: "+86 19072602714",
-  social: { facebook: "", // à renseigner dès que la page Facebook existe
+  social: { facebook: "https://www.facebook.com/profile.php?id=61595041626924",
     instagram: "https://www.instagram.com/ns_trade_and_business", tiktok: "https://www.tiktok.com/@ns.trade.and.business", snapchat: "https://snapchat.com/t/aZff7Scf" },
   retrait: { texte: "Ouagadougou", carte: "https://www.google.com/maps?q=12.376028,-1.531194" }, // 12°22'33.7"N 1°31'52.3"W
   rccm: "", ifu: "" // à renseigner quand le client les aura (affichés seulement s'ils sont remplis)
@@ -168,6 +168,10 @@ async function loadCatalog() {
     } catch (e) { CATALOG_DETAIL = e.name === "AbortError" ? "délai dépassé" : e.message; console.warn("Catalogue : lecture du Google Sheet impossible", e); }
   }
   PRODUCTS.length = 0; PROMOS.length = 0;
-  if (c) { PRODUCTS.push(...c.p); PROMOS.push(...c.m.filter(x => !x.fin || new Date(x.fin) >= new Date())); } else CATALOG_ERROR = true;
+  if (c) {
+    PRODUCTS.push(...c.p); PROMOS.push(...c.m.filter(x => !x.fin || new Date(x.fin) >= new Date()));
+    const cart = Cart.get(), keep = cart.filter(l => PRODUCTS.some(p => p.id === l.id)); // retire les articles qui n'existent plus au catalogue
+    if (keep.length !== cart.length) Cart.save(keep);
+  } else CATALOG_ERROR = true;
 }
 const READY = loadCatalog().catch(() => { CATALOG_ERROR = true; });
